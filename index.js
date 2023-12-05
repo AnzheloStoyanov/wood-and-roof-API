@@ -1,41 +1,16 @@
-const express = require('express');
-const { MongoClient } = require('mongodb');
-const { v1: uuidv4 } = require('uuid');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-
-const allowCors = fn => async (req, res) => {
-  const allowedOrigin = req.headers.origin || '*';
-
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, PATCH, DELETE, POST, PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  return await fn(req, res);
-};
-
-
-const app = express();
-app.use(cors(allowCors)); // Use the cors middleware globally
-app.use(express.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-const PORT = 8080;
-
+const PORT = 8080
+const express = require('express')
+const { MongoClient , ObjectId } = require('mongodb')
+const { v1: uuidv4 } = require('uuid')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const cors = require('cors')
+const { error } = require('console')
+const app = express()
+const stripe = require("stripe")("sk_test_51N02adHGku6BOIoRkNHey0MqcixWhJiXNvQxpdPetJUTKMdpIFW9K8qqVkY3xNUT8mTfCuHopK7jtgkQ4ckYb5xt00rRGPJW5S");
+const bodyParser = require("body-parser")
+app.use(cors())
+app.use(express.json({ limit: '50mb' }))
 const server = require('http').createServer(app)
 const io = require('socket.io')(server, {
   cors: {
@@ -140,8 +115,7 @@ app.delete('/logout', async (req, res) => {
 });
 
 // Create a new endpoint for handling the /Blog/GetAll POST request
-app.post('/Blog/Upsert',  allowCors(async (req, res) => 
-{
+app.post('/Blog/Upsert', async (req, res) => {
   try {
     const database = client.db('app-data');
     const blogs = database.collection('blogs');
@@ -169,10 +143,10 @@ app.post('/Blog/Upsert',  allowCors(async (req, res) =>
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-}));
+});
 // Create a new endpoint for handling the /Blog/Upsert GET request
 
-app.get('/Blog/GetAll',  allowCors(async (req, res) => {
+app.get('/Blog/GetAll', async (req, res) => {
   try {
     const database = client.db('app-data');
     const blogs = database.collection('blogs');
@@ -185,10 +159,10 @@ app.get('/Blog/GetAll',  allowCors(async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-}));
+});
 
 
-app.get('/Blog/GetById',  allowCors(async (req, res) => {
+app.get('/Blog/GetById', async (req, res) => {
   try {
     const database = client.db('app-data');
     const blogs = database.collection('blogs');
@@ -210,7 +184,7 @@ app.get('/Blog/GetById',  allowCors(async (req, res) => {
     console.error('Error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
-}));
+});
 
 
 
