@@ -10,7 +10,7 @@ const app = express()
 const stripe = require("stripe")("sk_test_51N02adHGku6BOIoRkNHey0MqcixWhJiXNvQxpdPetJUTKMdpIFW9K8qqVkY3xNUT8mTfCuHopK7jtgkQ4ckYb5xt00rRGPJW5S");
 const bodyParser = require("body-parser")
 const corsOptions = {
-  origin: 'https://yourfrontenddomain.com',
+  origin: 'https://wood-and-roof-api-anzhelostoyanov.vercel.app',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true, // enable credentials (cookies, authorization headers, etc.)
 };
