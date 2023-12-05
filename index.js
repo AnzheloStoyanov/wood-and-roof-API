@@ -1,6 +1,6 @@
 const PORT = 8080
 const express = require('express')
-const { MongoClient } = require('mongodb')
+const { MongoClient , ObjectId } = require('mongodb')
 const { v1: uuidv4 } = require('uuid')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
@@ -113,6 +113,84 @@ app.delete('/logout', async (req, res) => {
     //  SOMETHING
   }
 });
+
+// Create a new endpoint for handling the /Blog/GetAll POST request
+app.post('/Blog/Upsert', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const blogs = database.collection('blogs');
+
+    const blogData = req.body;
+
+    // If the blogData.id is provided, use it as _id (string)
+    const blogId = blogData.id;
+
+    // Convert the datePosted string to a Date object
+    blogData.datePosted = new Date(blogData.datePosted);
+
+    const result = await blogs.updateOne(
+      { _id: blogId },
+      { $set: blogData },
+      { upsert: true }
+    );
+
+    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+      res.status(200).json({ message: 'Blog upserted successfully' });
+    } else {
+      res.status(500).json({ message: 'Failed to upsert blog' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+// Create a new endpoint for handling the /Blog/Upsert GET request
+
+app.get('/Blog/GetAll', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const blogs = database.collection('blogs');
+
+    // Retrieve all blogs
+    const allBlogs = await blogs.find({}).toArray();
+
+    res.status(200).json(allBlogs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+app.get('/Blog/GetById', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const blogs = database.collection('blogs');
+
+    const blogId = req.query.id; // Assuming the blog ID is a string
+    console.log('Requested Blog ID:', blogId);
+
+    // Retrieve the blog by ID
+    const blog = await blogs.findOne({ _id: blogId });
+    console.log('Found Blog:', blog);
+
+    if (blog) {
+      res.status(200).json(blog);
+    } else {
+      console.log('Blog not found');
+      res.status(404).json({ message: 'Blog not found' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
 
 
 app.get('/sessions/userIds', async (req, res) => {
