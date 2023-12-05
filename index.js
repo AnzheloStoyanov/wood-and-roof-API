@@ -9,11 +9,7 @@ const { error } = require('console')
 const app = express()
 const stripe = require("stripe")("sk_test_51N02adHGku6BOIoRkNHey0MqcixWhJiXNvQxpdPetJUTKMdpIFW9K8qqVkY3xNUT8mTfCuHopK7jtgkQ4ckYb5xt00rRGPJW5S");
 const bodyParser = require("body-parser")
-const corsOptions = {
-  origin: 'https://wood-and-roof-api-anzhelostoyanov.vercel.app',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true, // enable credentials (cookies, authorization headers, etc.)
-};
+
 const allowCors = fn => async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', 'https://roof-and-woff-anzhelostoyanov.vercel.app');
@@ -30,8 +26,7 @@ const allowCors = fn => async (req, res) => {
 
   return await fn(req, res);
 };
-app.use(cors(corsOptions));
-
+app.use(cors());
 app.use(express.json({ limit: '50mb' }))
 const server = require('http').createServer(app)
 const io = require('socket.io')(server, {
