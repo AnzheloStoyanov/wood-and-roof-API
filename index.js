@@ -154,7 +154,8 @@ app.post('/Blog/Upsert', async (req, res) => {
 });
 // Create a new endpoint for handling the /Blog/Upsert GET request
 
-app.get('/Blog/GetAll', async (req, res) => {
+// Enable CORS specifically for the /Blog/GetAll route
+app.get('/Blog/GetAll', allowCors, async (req, res) => {
   try {
     const database = client.db('app-data');
     const blogs = database.collection('blogs');
@@ -168,7 +169,6 @@ app.get('/Blog/GetAll', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
 
 app.get('/Blog/GetById', async (req, res) => {
   try {
