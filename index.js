@@ -21,6 +21,7 @@ const io = require('socket.io')(server, {
 const uri =
   'mongodb+srv://anzhelostoyanovdev:aLOD2gSgoUREvlsn@tinderdb.9upifpe.mongodb.net/?retryWrites=true&w=majority'
 
+  
 const client = new MongoClient(uri)
 client.connect()
 
