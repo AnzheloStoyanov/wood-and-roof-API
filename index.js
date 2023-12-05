@@ -17,6 +17,7 @@ const allowCors = fn => async (req, res) => {
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
 
+
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -28,7 +29,7 @@ const allowCors = fn => async (req, res) => {
 
 
 const app = express();
-app.use(cors()); // Use the cors middleware globally
+app.use(cors(allowCors)); // Use the cors middleware globally
 app.use(express.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
