@@ -9,14 +9,20 @@ const { error } = require('console')
 const app = express()
 const stripe = require("stripe")("sk_test_51N02adHGku6BOIoRkNHey0MqcixWhJiXNvQxpdPetJUTKMdpIFW9K8qqVkY3xNUT8mTfCuHopK7jtgkQ4ckYb5xt00rRGPJW5S");
 const bodyParser = require("body-parser")
-app.use(cors())
-app.use(express.json({ limit: '50mb' }))
+
+const corsOptions = {
+  origin: 'https://roof-and-woff.vercel.app',
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));app.use(express.json({ limit: '50mb' }))
 const server = require('http').createServer(app)
 const io = require('socket.io')(server, {
   cors: {
     origin: '*'
   }
 })
+
 
 const uri =
   'mongodb+srv://anzhelostoyanovdev:aLOD2gSgoUREvlsn@tinderdb.9upifpe.mongodb.net/?retryWrites=true&w=majority'
