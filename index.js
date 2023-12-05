@@ -9,24 +9,7 @@ const { error } = require('console')
 const app = express()
 const stripe = require("stripe")("sk_test_51N02adHGku6BOIoRkNHey0MqcixWhJiXNvQxpdPetJUTKMdpIFW9K8qqVkY3xNUT8mTfCuHopK7jtgkQ4ckYb5xt00rRGPJW5S");
 const bodyParser = require("body-parser")
-
-const allowCors = fn => async (req, res) => {
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', 'https://roof-and-woff-anzhelostoyanov.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  return await fn(req, res);
-};
-app.use(cors());
+app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 const server = require('http').createServer(app)
 const io = require('socket.io')(server, {
@@ -39,7 +22,6 @@ const uri =
   'mongodb+srv://anzhelostoyanovdev:aLOD2gSgoUREvlsn@tinderdb.9upifpe.mongodb.net/?retryWrites=true&w=majority'
 
 const client = new MongoClient(uri)
-
 client.connect()
 
 app.post('/signup', async (req, res) => {
@@ -164,8 +146,7 @@ app.post('/Blog/Upsert', async (req, res) => {
 });
 // Create a new endpoint for handling the /Blog/Upsert GET request
 
-// Enable CORS specifically for the /Blog/GetAll route
-app.get('/Blog/GetAll', allowCors, async (req, res) => {
+app.get('/Blog/GetAll', async (req, res) => {
   try {
     const database = client.db('app-data');
     const blogs = database.collection('blogs');
@@ -179,6 +160,7 @@ app.get('/Blog/GetAll', allowCors, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 app.get('/Blog/GetById', async (req, res) => {
   try {
