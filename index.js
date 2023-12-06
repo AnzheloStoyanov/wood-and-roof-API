@@ -186,11 +186,125 @@ app.get('/Blog/GetById', async (req, res) => {
   }
 });
 
+// Assuming you have already instantiated the 'app' object from Express
 
+app.post('/Product/Upsert', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const products = database.collection('products');
 
+    const productData = req.body;
 
+    // If the productData.id is provided, use it as _id (string)
+    const productId = productData.id;
 
+    // Convert any string IDs to ObjectId
+    if (productId) {
+      productData.id = new ObjectId(productId);
+    }
 
+    const result = await products.updateOne(
+      { _id: productId },
+      { $set: productData },
+      { upsert: true }
+    );
+
+    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+      res.status(200).json({ message: 'Product upserted successfully' });
+    } else {
+      res.status(500).json({ message: 'Failed to upsert product' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.get('/Product/GetAll', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const products = database.collection('products');
+
+    // Retrieve all products
+    const allProducts = await products.find({}).toArray();
+
+    res.status(200).json(allProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+// Create a new endpoint for handling the /Product/GetFiltered GET request
+app.get('/Product/GetFiltered', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const products = database.collection('products');
+
+    // Extract parameters from the request query
+    const { categoryIds, allergensIdsNotContain, orderBy, ShowOnHomePage, pageNumber, pageSize } = req.query;
+
+    // Convert string parameters to their respective types
+    const categoryIdsArray = categoryIds ? categoryIds.split(',').map(Number) : [];
+    const allergensIdsNotContainArray = allergensIdsNotContain ? allergensIdsNotContain.split(',').map(Number) : [];
+    const orderByInt = orderBy ? parseInt(orderBy) : 1; // Default to 1 if orderBy is not provided
+    const ShowOnHomePageBool = ShowOnHomePage === 'true'; // Convert string to boolean
+    const pageNumberInt = pageNumber ? parseInt(pageNumber) : 1; // Default to 1 if pageNumber is not provided
+    const pageSizeInt = pageSize ? parseInt(pageSize) : 10; // Default to 10 if pageSize is not provided
+
+    // Your MongoDB query logic here based on the provided parameters
+    const query = {};
+
+    if (categoryIdsArray.length > 0) {
+      query['categories.id'] = { $in: categoryIdsArray };
+    }
+
+    if (allergensIdsNotContainArray.length > 0) {
+      query['allergens.id'] = { $nin: allergensIdsNotContainArray };
+    }
+
+    if (ShowOnHomePageBool !== undefined) {
+      query['showOnHomePage'] = ShowOnHomePageBool;
+    }
+
+    const sortingLogic = getOrderSortingLogic(orderByInt); // Define your sorting logic function
+
+    const totalCount = await products.countDocuments(query);
+
+    const filteredProducts = await products.find(query)
+      .sort(sortingLogic)
+      .skip((pageNumberInt - 1) * pageSizeInt)
+      .limit(pageSizeInt)
+      .toArray();
+
+    const totalPages = Math.ceil(totalCount / pageSizeInt);
+
+    const response = {
+      totalCount,
+      pageSize: pageSizeInt,
+      currentPage: pageNumberInt,
+      totalPages,
+      data: filteredProducts
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Helper function for sorting logic based on 'orderBy'
+function getOrderSortingLogic(orderBy) {
+  // Your sorting logic based on 'orderBy'
+  // Example: Sort by price in ascending order
+  if (orderBy === 1) {
+    return { price: 1 };
+  }
+  // Add more cases for other orderBy values if needed
+
+  // Default sorting logic (if no valid orderBy is provided)
+  return { _id: 1 }; // Sort by ObjectId in ascending order
+}
 
 
 app.get('/sessions/userIds', async (req, res) => {
