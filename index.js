@@ -188,6 +188,8 @@ app.get('/Blog/GetById', async (req, res) => {
 
 // Assuming you have already instantiated the 'app' object from Express
 
+// Assuming you have already instantiated the 'app' object from Express
+
 app.post('/Product/Upsert', async (req, res) => {
   try {
     const database = client.db('app-data');
@@ -200,7 +202,7 @@ app.post('/Product/Upsert', async (req, res) => {
 
     // Convert any string IDs to ObjectId
     if (productId) {
-      productData.id = new ObjectId(productId);
+      productData._id = productId; // Set _id field with the provided id
     }
 
     const result = await products.updateOne(
@@ -216,9 +218,11 @@ app.post('/Product/Upsert', async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
+
+
 
 app.get('/Product/GetAll', async (req, res) => {
   try {
@@ -305,6 +309,31 @@ function getOrderSortingLogic(orderBy) {
   // Default sorting logic (if no valid orderBy is provided)
   return { _id: 1 }; // Sort by ObjectId in ascending order
 }
+
+ // Create a new endpoint for handling the /Product/GetById GET request
+ app.get('/Product/GetById', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const products = database.collection('products');
+
+    const productId = req.query.id; // Assuming the product ID is a string
+    console.log('Requested Product ID:', productId);
+
+    // Retrieve the product by ID
+    const product = await products.findOne({ _id: parseInt(productId) });
+    console.log('Found Product:', product);
+
+    if (product) {
+      res.status(200).json(product);
+    } else {
+      console.log('Product not found');
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 
 app.get('/sessions/userIds', async (req, res) => {
