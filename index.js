@@ -172,7 +172,6 @@ app.get('/Blog/GetById', async (req, res) => {
 
     // Retrieve the blog by ID
     const blog = await blogs.findOne({ _id: blogId });
-    console.log('Found Blog:', blog);
 
     if (blog) {
       res.status(200).json(blog);
@@ -334,6 +333,53 @@ function getOrderSortingLogic(orderBy) {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+app.get('/Category/GetAll', async (req, res) => {
+  try {
+    const database = client.db('app-data'); // Replace with your actual database name
+    const categories = database.collection('categories'); // Replace with your actual collection name for categories
+
+    // Retrieve all categories
+    const allCategories = await categories.find({}, { _id: 5 }).toArray(); // Exclude _id field from the response
+
+    res.status(200).json(allCategories);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+// ...
+
+// Create a new endpoint for handling the /Category/Upsert POST request
+app.post('/Category/Upsert', async (req, res) => {
+  try {
+    const database = client.db('app-data');
+    const categories = database.collection('categories');
+
+    const categoryData = req.body;
+
+    // If the categoryData.id is provided, use it as _id (string)
+    const categoryId = categoryData.id;
+
+    const result = await categories.updateOne(
+      { _id: categoryId },
+      { $set: categoryData },
+      { upsert: true }
+    );
+
+    if (result.upsertedCount > 0) {
+      const upsertedCategory = await categories.findOne({ _id: result.upsertedId });
+      res.status(200).json(upsertedCategory);
+    } else {
+      const existingCategory = await categories.findOne({ _id: categoryId });
+      res.status(200).json(existingCategory);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 
 app.get('/sessions/userIds', async (req, res) => {
