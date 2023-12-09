@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const cors = require('cors')
 const { error } = require('console')
+const nodemailer = require('nodemailer');
 const app = express()
 const stripe = require("stripe")("sk_test_51N02adHGku6BOIoRkNHey0MqcixWhJiXNvQxpdPetJUTKMdpIFW9K8qqVkY3xNUT8mTfCuHopK7jtgkQ4ckYb5xt00rRGPJW5S");
 const bodyParser = require("body-parser")
@@ -674,29 +675,337 @@ app.get('/users/:userId/messages/:correspondingUserId', async (req, res) => {
 
 
 
-  app.post("/payment",  async (req, res) => {
-    let { amount, id } = req.body
-    try {
-      const payment = await stripe.paymentIntents.create({
-        amount,
-        currency: "USD",
-        description: "Tinder IT Talants",
-        payment_method: id,
-        confirm: true
-      })
-      res.json({
-        message: "Payment successful",
-        success: true
-      })
-    } catch (error) {
-      console.log("Error", error)
-      res.json({
-        message: "Payment failed",
-        success: false
-      })
+ // Define a function to send a confirmation email
+async function sendConfirmationEmail(userEmail, cart) {
+  // Configure the email transport using nodemailer
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'anzhelostoyanovdev@gmail.com',
+        pass: 'vgihsjebsorqgzbe'
     }
-  })
+});
+
+const mailOptions = {
+  from: 'anzhelostoyanovdev@gmail.com',
+  to: userEmail,
+  subject: 'Purchase Confirmation',
+  html: `<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0;">
+     <meta name="format-detection" content="telephone=no"/>
   
+    <!-- Responsive Mobile-First Email Template by Konstantin Savchenko, 2015.
+    https://github.com/konsav/email-templates/  -->
+  
+    <style>
+  /* Reset styles */ 
+  body { margin: 0; padding: 0; min-width: 100%; width: 100% !important; height: 100% !important;}
+  body, table, td, div, p, a { -webkit-font-smoothing: antialiased; text-size-adjust: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; line-height: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-collapse: collapse !important; border-spacing: 0; }
+  img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+  #outlook a { padding: 0; }
+  .ReadMsgBody { width: 100%; } .ExternalClass { width: 100%; }
+  .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div { line-height: 100%; }
+  
+  /* Rounded corners for advanced mail clients only */ 
+  @media all and (min-width: 560px) {
+    .container { border-radius: 8px; -webkit-border-radius: 8px; -moz-border-radius: 8px; -khtml-border-radius: 8px;}
+  }
+  
+  /* Set color for auto links (addresses, dates, etc.) */ 
+  a, a:hover {
+    color: #127DB3;
+  }
+  .footer a, .footer a:hover {
+    color: #999999;
+  }
+  
+     </style>
+  
+    <!-- MESSAGE SUBJECT -->
+    <title>Get this responsive email template</title>
+  
+  </head>
+  
+  <!-- BODY -->
+  <!-- Set message background color (twice) and text color (twice) -->
+  <body topmargin="0" rightmargin="0" bottommargin="0" leftmargin="0" marginwidth="0" marginheight="0" width="100%" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; height: 100%; -webkit-font-smoothing: antialiased; text-size-adjust: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; line-height: 100%;
+    background-color: #F0F0F0;
+    color: #000000;"
+    bgcolor="#F0F0F0"
+    text="#000000">
+  
+  <!-- SECTION / BACKGROUND -->
+  <!-- Set message background color one again -->
+  <table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%;" class="background"><tr><td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0;"
+    bgcolor="#F0F0F0">
+  
+  
+  <!-- WRAPPER / CONTEINER -->
+  <!-- Set conteiner background color -->
+  <table border="0" cellpadding="0" cellspacing="0" align="center"
+    bgcolor="#FFFFFF"
+    width="560" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit;
+    max-width: 560px;" class="container">
+  
+    <!-- HEADER -->
+    <!-- Set text color and font family ("sans-serif" or "Georgia, serif") -->
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 24px; font-weight: bold; line-height: 130%;
+        padding-top: 25px;
+        color: #000000;
+        font-family: sans-serif;" class="header">
+          Поръчката е потвърдена
+      </td>
+    </tr>
+    
+    <!-- SUBHEADER -->
+    <!-- Set text color and font family ("sans-serif" or "Georgia, serif") -->
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-bottom: 3px; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 18px; font-weight: 300; line-height: 150%;
+        padding-top: 5px;
+        color: #000000;
+        font-family: sans-serif;" class="subheader">
+          вашата къщичка се подготвя за вашия приятел
+      </td>
+    </tr>
+  
+    <!-- HERO IMAGE -->
+    <!-- Image text color should be opposite to background color. Set your url, image src, alt and title. Alt text should fit the image size. Real image size should be x2 (wrapper x2). Do not set height for flexible images (including "auto"). URL format: http://domain.com/?utm_source={{Campaign-Source}}&utm_medium=email&utm_content={{Ìmage-Name}}&utm_campaign={{Campaign-Name}} -->
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0;
+        padding-top: 20px;" class="hero"><a target="_blank" style="text-decoration: none;"
+        href="https://roof-and-woff-anzhelostoyanov.vercel.app"><img border="0" vspace="0" hspace="0"
+        src="https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsX29mZmljZV8yNl9waG90b19vZl9hX3BvcnRyYWl0X29mX2N1dGVzdF9wdXBweWV5ZXNfc21pbF84MGJjODAzYy1hODAzLTRlODMtOThmMC0yOWI1NjkwMDc4Y2ZfMS5qcGc.jpg"
+        alt="Please enable images to view this content" title="Hero Image"
+        width="560" style="
+        width: 100%;
+        max-width: 560px;
+        color: #000000; font-size: 13px; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block;"/></a></td>
+    </tr>
+  
+    <!-- PARAGRAPH -->
+    <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 17px; font-weight: 400; line-height: 160%;
+        padding-top: 25px; 
+        color: #000000;
+        font-family: sans-serif;" class="paragraph">
+          Искрено благодарим ви за избора на нашата продукция и за направената от вас покупка. Ние ценим доверието, което ни оказахте, и се надяваме, че продуктът/услугата ще отговаря на вашите очаквания.
+  
+                  Ако имате въпроси или нужда от допълнителна информация, не се колебайте да се свържете с нас. Ние сме тук, за да помогнем.
+      </td>
+    </tr>
+  
+    <!-- BUTTON -->
+    <!-- Set button background color at TD, link/text color at A and TD, font family ("sans-serif" or "Georgia, serif") at TD. For verification codes add "letter-spacing: 5px;". Link format: http://domain.com/?utm_source={{Campaign-Source}}&utm_medium=email&utm_content={{Button-Name}}&utm_campaign={{Campaign-Name}} -->
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%;
+        padding-top: 25px;
+        padding-bottom: 5px;" class="button"><a
+        href="https://roof-and-woff-anzhelostoyanov.vercel.app/" target="_blank" style="text-decoration: underline;">
+          <table border="0" cellpadding="0" cellspacing="0" align="center" style="max-width: 240px; min-width: 120px; border-collapse: collapse; border-spacing: 0; padding: 0;"><tr><td align="center" valign="middle" style="padding: 12px 24px; margin: 0; text-decoration: underline; border-collapse: collapse; border-spacing: 0; border-radius: 4px; -webkit-border-radius: 4px; -moz-border-radius: 4px; -khtml-border-radius: 4px;"
+            bgcolor="#E9703E"><a target="_blank" style="text-decoration: underline;
+            color: #FFFFFF; font-family: sans-serif; font-size: 17px; font-weight: 400; line-height: 120%;"
+            href="https://roof-and-woff-anzhelostoyanov.vercel.app/">
+              Свържи се с нас
+            </a>
+        </td></tr></table></a>
+      </td>
+    </tr>
+  </table>
+  
+  <!-- WRAPPER -->
+  <!-- Set wrapper width (twice) -->
+  <table border="0" cellpadding="0" cellspacing="0" align="center"
+    width="560" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit;
+    max-width: 560px;" class="wrapper">
+  
+    <!-- SOCIAL NETWORKS -->
+    <!-- Image text color should be opposite to background color. Set your url, image src, alt and title. Alt text should fit the image size. Real image size should be x2 -->
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%;
+        padding-top: 25px;" class="social-icons"><table
+        width="256" border="0" cellpadding="0" cellspacing="0" align="center" style="border-collapse: collapse; border-spacing: 0; padding: 0;">
+        <tr>
+  
+          <!-- ICON 1 -->
+          <td align="center" valign="middle" style="margin: 0; padding: 0; padding-left: 10px; padding-right: 10px; border-collapse: collapse; border-spacing: 0;"><a target="_blank"
+            href="https://raw.githubusercontent.com/konsav/email-templates/"
+          style="text-decoration: none;"><img border="0" vspace="0" hspace="0" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: inline-block;
+            color: #000000;"
+            alt="F" title="Facebook"
+            width="44" height="44"
+            src="https://raw.githubusercontent.com/konsav/email-templates/master/images/social-icons/facebook.png"></a></td>
+  
+          <!-- ICON 2 -->
+          <td align="center" valign="middle" style="margin: 0; padding: 0; padding-left: 10px; padding-right: 10px; border-collapse: collapse; border-spacing: 0;"><a target="_blank"
+            href="https://raw.githubusercontent.com/konsav/email-templates/"
+          style="text-decoration: none;"><img border="0" vspace="0" hspace="0" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: inline-block;
+            color: #000000;"
+            alt="T" title="Twitter"
+            width="44" height="44"
+            src="https://raw.githubusercontent.com/konsav/email-templates/master/images/social-icons/twitter.png"></a></td>				
+  
+          <!-- ICON 3 -->
+          <td align="center" valign="middle" style="margin: 0; padding: 0; padding-left: 10px; padding-right: 10px; border-collapse: collapse; border-spacing: 0;"><a target="_blank"
+            href="https://raw.githubusercontent.com/konsav/email-templates/"
+          style="text-decoration: none;"><img border="0" vspace="0" hspace="0" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: inline-block;
+            color: #000000;"
+            alt="G" title="Google Plus"
+            width="44" height="44"
+            src="https://raw.githubusercontent.com/konsav/email-templates/master/images/social-icons/googleplus.png"></a></td>		
+  
+          <!-- ICON 4 -->
+          <td align="center" valign="middle" style="margin: 0; padding: 0; padding-left: 10px; padding-right: 10px; border-collapse: collapse; border-spacing: 0;"><a target="_blank"
+            href="https://raw.githubusercontent.com/konsav/email-templates/"
+          style="text-decoration: none;"><img border="0" vspace="0" hspace="0" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: inline-block;
+            color: #000000;"
+            alt="I" title="Instagram"
+            width="44" height="44"
+            src="https://raw.githubusercontent.com/konsav/email-templates/master/images/social-icons/instagram.png"></a></td>
+  
+        </tr>
+        </table>
+      </td>
+    </tr>
+  
+    <!-- FOOTER -->
+    <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 13px; font-weight: 400; line-height: 150%;
+        padding-top: 20px;
+        padding-bottom: 20px;
+        color: #999999;
+        font-family: sans-serif;" class="footer">
+  
+          This email template was sent to&nbsp;you becouse we&nbsp;want to&nbsp;make the&nbsp;world a&nbsp;better place. You&nbsp;could change your <a href="https://github.com/konsav/email-templates/" target="_blank" style="text-decoration: underline; color: #999999; font-family: sans-serif; font-size: 13px; font-weight: 400; line-height: 150%;">subscription settings</a> anytime.
+  
+          <!-- ANALYTICS -->
+          <!-- https://www.google-analytics.com/collect?v=1&tid={{UA-Tracking-ID}}&cid={{Client-ID}}&t=event&ec=email&ea=open&cs={{Campaign-Source}}&cm=email&cn={{Campaign-Name}} -->
+          <img width="1" height="1" border="0" vspace="0" hspace="0" style="margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block;"
+          src="https://raw.githubusercontent.com/konsav/email-templates/master/images/tracker.png" />
+  
+      </td>
+    </tr>
+  
+  <!-- End of WRAPPER -->
+  </table>
+  
+  <!-- End of SECTION / BACKGROUND -->
+  </td></tr></table>
+  
+  </body>
+  </html>`
+};
+
+
+  try {
+      // Send the email
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`Confirmation email sent to anjelostoqnov@gmai.com. Message ID: ${info.messageId}`);
+  } catch (error) {
+      console.error('Error sending confirmation email:', error);
+      console.error('Error sending confirmation email:', error);
+  }
+}
+
+// Your existing code...
+
+// Update your /payment endpoint to call sendConfirmationEmail on successful payment
+app.post("/payment", async (req, res) => {
+  let { amount, description, id, userEmail, cart, productID } = req.body; // Assuming you're sending userEmail and cart in the request body
+
+  try {
+    // Create a PaymentIntent with productID in the metadata
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: "USD",
+      description: description,
+      payment_method: id,
+      confirm: true,
+      metadata: {
+        productID: productID
+      }
+    });
+
+    // If payment is successful, send a confirmation email
+    if (paymentIntent.status === 'succeeded') {
+      // Assuming userEmail and cart are available in the request body
+      await sendConfirmationEmail(userEmail, cart);
+      console.log('sendConfirmationEmail called successfully');
+      console.log("anjelostoqnov@gmai.com");
+    }
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      message: "Payment successful",
+      success: true
+    });
+  } catch (error) {
+    console.log("Error", error);
+    res.json({
+      message: "Payment failed",
+      success: false
+    });
+  }
+});
+
+// ...
+
+app.post('/payments', async (req, res) => {
+  try {
+    const { items, id, userEmail } = req.body;
+
+    // Calculate the total amount based on the items and their quantities
+    const amount = calculateTotalAmount(items);
+
+    // Create a payment intent with the calculated amount
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+      payment_method: id,
+      confirm: true,
+    });
+
+    // If the payment intent is successful, update the inventory or take any necessary actions
+    if (paymentIntent.status === 'succeeded') {
+      // Your logic to handle successful payment
+
+      // Send a success response to the client
+      return res.status(200).json({ success: true });
+    } else {
+      return res.status(400).json({ success: false, message: 'Payment failed' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Helper function to calculate the total amount
+function calculateTotalAmount(items) {
+  // Calculate the total amount based on your item prices and quantities
+  // Replace this with your own logic based on your pricing strategy
+  const totalAmount = items.reduce((acc, item) => {
+    return acc + item.quantity * getItemPrice(item.price);
+  }, 0);
+
+  return totalAmount;
+}
+
+// Dummy function to get item price, replace it with your actual logic
+function getItemPrice(priceId) {
+  // Replace this with your logic to fetch the price of the item with the given price ID
+  // from your database or any other source
+  return 1000; // Dummy price for example purposes
+}
+
+
+// ...
+
 
 // ADD MESSAGES Database
 app.post('/message', async (req, res) => {
